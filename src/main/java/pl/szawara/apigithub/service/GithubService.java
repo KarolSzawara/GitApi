@@ -3,6 +3,7 @@ package pl.szawara.apigithub.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import pl.szawara.apigithub.Configuration.LimitException;
 import pl.szawara.apigithub.Configuration.NotFoundException;
 import pl.szawara.apigithub.model.Branch;
 import pl.szawara.apigithub.model.Repository;
@@ -21,8 +22,13 @@ public class GithubService {
         Flux<Repository> ret= webClient.get()
                 .uri("/users/{userName}/repos",userName)
                 .retrieve()
-                .onStatus(httpStatusCode -> httpStatusCode== HttpStatus.NOT_FOUND,
+                .onStatus(httpStatusCode -> httpStatusCode== HttpStatus.NOT_FOUND
+                        ,
                         clientResponse -> Mono.just(new NotFoundException("Repository not found for user:"+userName)))
+                .onStatus(httpStatusCode->
+                        httpStatusCode== HttpStatus.FORBIDDEN
+                        ,
+                        clientResponse -> Mono.just(new LimitException("API rate limit")))
                 .bodyToFlux(Repository.class)
                 .filter(repository -> !repository.fork())
                 ;
@@ -34,7 +40,7 @@ public class GithubService {
     public Flux<Response> getFullInfo(String userName){
         return getUserRepositories(userName).flatMap(repository -> {
            return webClient.get()
-                   .uri("/repos/KarolSzawara/Shop/branches")
+                   .uri("/repos/{userName}/Shop/branches",userName)
                    .retrieve()
                    .onStatus(httpStatusCode -> httpStatusCode== HttpStatus.NOT_FOUND,
                            clientResponse -> Mono.just(new NotFoundException("Repository not found for user:"+userName)))

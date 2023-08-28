@@ -1,6 +1,12 @@
 package pl.szawara.apigithub.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-
-public record Message(String message) {
+@Data
+@AllArgsConstructor
+public class Message {
+    String Message;
+    HttpStatus status;
 }

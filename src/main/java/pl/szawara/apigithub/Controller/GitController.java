@@ -17,7 +17,6 @@ public class GitController {
         this.githubService=githubService;
     }
     @GetMapping("/{username}")
-
     Flux<Response> getUserRepository(@PathVariable String username){
         return githubService.getFullInfo(username);
     }

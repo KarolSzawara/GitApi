@@ -16,6 +16,14 @@ import reactor.core.publisher.Mono;
 public class DefaultErrorHandler extends ResponseEntityExceptionHandler {
     @Override
     protected Mono<ResponseEntity<Object>> handleNotAcceptableStatusException(NotAcceptableStatusException ex, HttpHeaders headers, HttpStatusCode status, ServerWebExchange exchange) {
-        return Mono.just(ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("Not Acceptable Status. The server cannot produce a response matching the list of acceptable values in the 'Accept' header. Please ensure the header is set to 'application/json'."));
+        return Mono.just(new ResponseEntity<>("Not Acceptable Status. The server cannot produce a response matching the list of acceptable values in the 'Accept' header.",HttpStatus.NOT_ACCEPTABLE));
+      }
+    @ExceptionHandler(LimitException.class)
+    public Mono<ResponseEntity<Message>> generateLimitException(LimitException ex){
+        return Mono.just(new ResponseEntity<>(new Message(ex.getMessage(),HttpStatus.FORBIDDEN), HttpStatus.FORBIDDEN));
+    }
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Message> generateNotFoundException(NotFoundException ex){
+        return new ResponseEntity<>(new Message(ex.getMessage(),HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
     }
 }
